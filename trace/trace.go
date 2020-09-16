@@ -5,6 +5,8 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/uber/jaeger-client-go"
+
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/uber/jaeger-client-go/log"
