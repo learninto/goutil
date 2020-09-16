@@ -1,4 +1,4 @@
-package jsonx
+package xjson
 
 import json "github.com/json-iterator/go"
 
