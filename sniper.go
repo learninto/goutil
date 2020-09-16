@@ -1,4 +1,4 @@
-package utils
+package goutil
 
 import (
 	"net/http"
