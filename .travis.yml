@@ -12,7 +12,7 @@ before_install:
 
 script:
   - go test -v ./...
-  - $HOME/gopath/bin/goveralls -service=travis-ci
+  - goveralls -service=travis-ci
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
