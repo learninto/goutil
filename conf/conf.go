@@ -214,7 +214,11 @@ func (c *Conf) Set(key string, value string) {
 // 目前仅支持 toml 文件，不用传扩展名
 // 如果要读取 foo.toml 配置，可以 File("foo").Get("bar")
 func File(name string) *Conf {
-	return files[name]
+	res, _ := files[name]
+	if res == nil {
+		res = &Conf{viper: &viper.Viper{}}
+	}
+	return res
 }
 
 // OnConfigChange 注册配置文件变更回调
