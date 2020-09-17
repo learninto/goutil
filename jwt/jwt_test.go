@@ -1,8 +1,13 @@
 package jwt
 
 import (
+	"encoding/json"
 	"reflect"
 	"testing"
+
+	"github.com/dgrijalva/jwt-go"
+
+	"github.com/k0kubun/pp"
 )
 
 func TestGetSignKey(t *testing.T) {
@@ -40,8 +45,8 @@ func TestJWT_CreateToken(t *testing.T) {
 		{
 			"case 01",
 			fields{SigningKey: []byte("gwt_sign_key")},
-			args{CustomClaims{Data: "123456"}},
-			"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJEYXRhIjoiMTIzNDU2IiwiZXhwIjoxNTg2NzAyMDI1fQ.vYUJbqt8hN9mmACwaiGyzlZ38xKv2BDxDy-dt7im6_0",
+			args{CustomClaims{Data: []byte("123456")}},
+			"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJEYXRhIjoxMjM0NTZ9.oQC5aJRtHlHkxBvOKNj6ne5FFUnznwO8hjdcoWClNjo",
 			false,
 		},
 	}
@@ -78,10 +83,16 @@ func TestJWT_ParseToken(t *testing.T) {
 	}{
 		// TODO: Add test cases.
 		{
-			name:    "case 01",
-			fields:  fields{SigningKey: []byte("gwt_sign_key")},
-			args:    args{tokenString: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJEYXRhIjoiMTIzNDU2IiwiZXhwIjoxNTg2NzAyMDI1fQ.vYUJbqt8hN9mmACwaiGyzlZ38xKv2BDxDy-dt7im6_0"},
-			want:    &CustomClaims{Data: "123456"},
+			name:   "case 01",
+			fields: fields{SigningKey: []byte("gwt_sign_key")},
+			args:   args{tokenString: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJEYXRhIjpudWxsfQ.AKy7KIJnXUwB20EmOoxWn6BGeAskGtnotlLPo10uGbk"},
+			want: &CustomClaims{
+				Data: json.RawMessage{0x6e, 0x75, 0x6c, 0x6c},
+				StandardClaims: jwt.StandardClaims{
+					Audience: "", ExpiresAt: 0, Id: "",
+					IssuedAt: 0, Issuer: "", NotBefore: 0, Subject: "",
+				},
+			},
 			wantErr: false,
 		},
 	}
@@ -96,6 +107,7 @@ func TestJWT_ParseToken(t *testing.T) {
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
+				pp.Println(got)
 				t.Errorf("ParseToken() got = %v, want %v", got, tt.want)
 			}
 		})
@@ -121,7 +133,7 @@ func TestJWT_RefreshToken(t *testing.T) {
 			"case 01",
 			fields{SigningKey: []byte("gwt_sign_key")},
 			args{"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJuYW1lIjoi5byg5LiJIiwicGFzc3dvcmQiOiIxMjM0NTYiLCJydWxlcyI6bnVsbH0.agleKMaE-ncgJetG8jGU4eLMlNsCBZN4CyN2pOSht4o"},
-			"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJEYXRhIjpudWxsLCJleHAiOjE1ODY3MDQzNzl9.OCz23qyBdnTQe-AmFSMjhIC-Mp0oUuFi0wN-1z-mkoU",
+			"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJEYXRhIjpudWxsfQ.AKy7KIJnXUwB20EmOoxWn6BGeAskGtnotlLPo10uGbk",
 			false,
 		},
 	}
