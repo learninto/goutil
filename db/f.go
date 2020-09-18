@@ -119,6 +119,15 @@ func (F) buildFilter(f F) (res string) {
 		str = strings.TrimRight(str, ",") + ")"
 		res = res + str
 		break
+	case FieldLogicNotIn:
+		str := " not in ("
+		typeArr := strings.Split(f.Value, ",")
+		for _, v := range typeArr {
+			str = str + "'" + v + "'" + ","
+		}
+		str = strings.TrimRight(str, ",") + ")"
+		res = res + str
+		break
 	default:
 		break
 	}

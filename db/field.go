@@ -57,6 +57,9 @@ const FieldLogicNeq = 400
 // FieldLogicIn 过滤逻辑 500： in
 const FieldLogicIn = 500
 
+// FieldLogicNotIn 过滤逻辑 500： not in
+const FieldLogicNotIn = 501
+
 // IsMultipleTrue 是否多重应用条件。是指在sql中，该过滤值在多个子查询中需要用到。 0：否；100：是
 const IsMultipleTrue = 100
 
