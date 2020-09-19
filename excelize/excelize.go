@@ -20,3 +20,14 @@ func OpenFile(filename string) (*excelize.File, error) {
 func OpenReader(r io.Reader) (*excelize.File, error) {
 	return excelize.OpenReader(r)
 }
+
+// CoordinatesToCellName converts [X, Y] coordinates to alpha-numeric cell
+// name or returns an error.
+//
+// Example:
+//
+//    CoordinatesToCellName(1, 1) // returns "A1", nil
+//
+func CoordinatesToCellName(col, row int) (string, error) {
+	return excelize.CoordinatesToCellName(col, row)
+}
