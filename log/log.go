@@ -3,7 +3,6 @@ package log
 
 import (
 	"context"
-	"fmt"
 	"os"
 
 	"github.com/k0kubun/pp"
@@ -64,7 +63,7 @@ func Get(ctx context.Context) Logger {
 		"app_id":      conf.AppID,
 		"instance_id": conf.Hostname,
 		"trace_id":    ctx.Value(ctxkit.TraceIDKey),
-		"uid":         fmt.Sprint(ctxkit.UserIDKey),
+		"uid":         ctx.Value(ctxkit.UserIDKey),
 		"ip":          ctx.Value(ctxkit.UserIPKey),
 		"platform":    ctx.Value(ctxkit.PlatformKey),
 		"device":      ctx.Value(ctxkit.DeviceKey),
