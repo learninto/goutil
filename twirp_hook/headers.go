@@ -22,8 +22,10 @@ func NewHeaders() *twirp.ServerHooks {
 		PartIds string `json:"part_ids"`
 		// Comment: 部门id数组 英文逗号隔开
 		DepartmentIds string `json:"department_ids"`
-		//Comment: 用户昵称
+		// Comment: 用户昵称
 		NickName string `json:"nick_name"`
+		// Comment: 用户登录账号
+		UserName string `json:"user_name"`
 	}
 	return &twirp.ServerHooks{
 		RequestRouted: func(ctx context.Context) (context.Context, error) {
@@ -38,6 +40,7 @@ func NewHeaders() *twirp.ServerHooks {
 			}
 
 			ctx = ctxkit.WithUserID(ctx, u.ID)                   // 注入用户id
+			ctx = ctxkit.WithUserName(ctx, u.UserName)           // 注入用户登录账号
 			ctx = ctxkit.WithNickName(ctx, u.NickName)           // 注入用户昵称
 			ctx = ctxkit.WithCompanyID(ctx, u.CompanyID)         // 注入公司id
 			ctx = ctxkit.WithDepartmentID(ctx, u.DepartmentID)   // 注入管辖部门id
