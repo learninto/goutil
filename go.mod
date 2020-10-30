@@ -22,7 +22,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.3 // indirect
 	github.com/nsqio/go-nsq v1.0.8
 	github.com/opentracing/opentracing-go v1.2.0
-	github.com/pkg/errors v0.8.1
+	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.3.0
 	github.com/robfig/cron v1.2.0
 	github.com/sirupsen/logrus v1.4.2
