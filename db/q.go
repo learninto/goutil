@@ -115,16 +115,30 @@ func (m Q) BuildSql(ctx context.Context) (sql string, err error) {
 		var b strings.Builder
 		b.WriteString(" order by ")
 		b.WriteString(m.ReplaceOrderBy)
-		m.Sql = strings.ReplaceAll(m.Sql, "{{.replace_order_by}}", b.String())
+		m.ReplaceOrderBy = b.String()
 	}
+	m.Sql = strings.ReplaceAll(m.Sql, "{{.replace_order_by}}", m.ReplaceOrderBy)
 
 	// 追加的分组条件
 	if m.ReplaceGroupBy != "" {
 		var b strings.Builder
 		b.WriteString(" group by ")
 		b.WriteString(m.ReplaceGroupBy)
-		m.Sql = strings.ReplaceAll(m.Sql, "{{.replace_group_by}}", b.String())
+		m.ReplaceGroupBy = b.String()
 	}
+	m.Sql = strings.ReplaceAll(m.Sql, "{{.replace_group_by}}", m.ReplaceGroupBy)
+
+	// 追加的分页条件
+	replaceLimit := ""
+	if m.PageSize > 0 && m.CurrentPage >= 0 {
+		var b strings.Builder
+		b.WriteString(" limit ")
+		b.WriteString(strconv.FormatInt((m.CurrentPage-1)*m.PageSize, 10))
+		b.WriteString(",")
+		b.WriteString(strconv.FormatInt(m.PageSize, 10))
+		replaceLimit = b.String()
+	}
+	m.Sql = strings.ReplaceAll(m.Sql, "{{.replace_limit}}", replaceLimit)
 
 	m.Sql, err = m.BuildFilter(ctx, m.Filters, m.Sql)
 
@@ -151,17 +165,6 @@ func (m Q) BuildFilter(ctx context.Context, filters []F, sql string) (string, er
 		}
 	}
 
-	// 追加的分页条件
-	replaceLimit := ""
-	if m.PageSize > 0 && m.CurrentPage >= 0 {
-		var b strings.Builder
-		b.WriteString(" limit ")
-		b.WriteString(strconv.FormatInt((m.CurrentPage-1)*m.PageSize, 10))
-		b.WriteString(",")
-		b.WriteString(strconv.FormatInt(m.PageSize, 10))
-		replaceLimit = b.String()
-	}
-
 	t := time.Now()
 	curDate := time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.Local).Unix()
 	tempVars := map[string]interface{}{
@@ -173,7 +176,6 @@ func (m Q) BuildFilter(ctx context.Context, filters []F, sql string) (string, er
 		"yesterday":      curDate - 86400,              // 昨天开始时间戳值
 		"tomorrow":       curDate + 86400,              // 明天开始间戳值
 		"append_filter":  appendFilter,                 // 追加的筛选条件
-		"replace_limit":  replaceLimit,                 // 追加的筛选条件
 	}
 	tmpl, err := template.New("tmpl").Parse(sql)
 	if err != nil {
@@ -191,7 +193,6 @@ func (m Q) BuildFilter(ctx context.Context, filters []F, sql string) (string, er
 	}
 
 	sql = html.UnescapeString(sql)
-	sql = strings.ReplaceAll(sql, "<no value>", "")
 
 	return sql, nil
 }
