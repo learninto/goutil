@@ -185,12 +185,15 @@ func (m Q) BuildFilter(ctx context.Context, filters []F, sql string) (string, er
 		return "", err
 	}
 
-	bytesSQL := tmplBytes.String()
-	if bytesSQL == "" {
+	sql = tmplBytes.String()
+	if sql == "" {
 		return "", errors.New("build F is null")
 	}
 
-	return html.UnescapeString(bytesSQL), nil
+	sql = html.UnescapeString(sql)
+	sql = strings.ReplaceAll(sql, "<no value>", "")
+
+	return sql, nil
 }
 
 // 构造单个筛选
