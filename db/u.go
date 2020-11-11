@@ -43,7 +43,7 @@ func (m U) BuildSQL(ctx context.Context) (sql string, err error) {
 
 	m.SQL = strings.ReplaceAll(m.SQL, "{{.replace_values}}", replaceValues)
 
-	m.SQL, err = F{}.BuildFilter(ctx, m.Filters, m.SQL)
+	m.SQL, err = Q{}.BuildFilter(ctx, m.Filters, m.SQL)
 	if err != nil {
 		return "", err
 	}
