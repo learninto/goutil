@@ -10,7 +10,7 @@ import (
 	"github.com/learninto/goutil/metrics"
 	"github.com/learninto/goutil/twirp"
 
-	opentracing "github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go"
 )
 
 type bizResponse interface {
@@ -40,12 +40,9 @@ func NewLog() *twirp.ServerHooks {
 			span, ctx := opentracing.StartSpanFromContext(ctx, "LogReq")
 			defer span.Finish()
 
-			status, _ := twirp.StatusCode(ctx)
-			req, _ := twirp.HttpRequest(ctx)
-			resp, _ := twirp.Response(ctx)
-
 			var bizCode int32
 			var bizMsg string
+			resp, _ := twirp.Response(ctx)
 			if br, ok := resp.(bizResponse); ok {
 				bizCode = br.GetCode()
 				bizMsg = br.GetMsg()
@@ -54,13 +51,15 @@ func NewLog() *twirp.ServerHooks {
 			start := ctx.Value(ctxkit.StartTimeKey).(time.Time)
 			duration := time.Since(start)
 
+			status, _ := twirp.StatusCode(ctx)
 			if _, ok := ctx.Deadline(); ok {
 				if ctx.Err() != nil {
 					status = "503"
 				}
 			}
 
-			path := req.URL.Path
+			hreq, _ := twirp.HttpRequest(ctx)
+			path := hreq.URL.Path
 
 			// 外部爬接口脚本会请求任意 API
 			// 导致 prometheus 无法展示数据
@@ -71,7 +70,11 @@ func NewLog() *twirp.ServerHooks {
 				).Observe(duration.Seconds())
 			}
 
-			form := req.Form
+			form := hreq.Form
+			// 新版本采用json/protobuf形式，公共参数需要读取query
+			if len(form) == 0 {
+				form = hreq.URL.Query()
+			}
 			// 移除日志中的敏感信息
 			if conf.IsProdEnv {
 				form.Del("access_key")
@@ -79,8 +82,7 @@ func NewLog() *twirp.ServerHooks {
 				form.Del("sign")
 			}
 
-			logger := log.Get(ctx)
-			logger.WithFields(log.Fields{
+			log.Get(ctx).WithFields(log.Fields{
 				"path":     path,
 				"status":   status,
 				"params":   form.Encode(),
@@ -92,11 +94,10 @@ func NewLog() *twirp.ServerHooks {
 		Error: func(ctx context.Context, err twirp.Error) context.Context {
 			c := twirp.ServerHTTPStatusFromErrorCode(err.Code())
 
-			logger := log.Get(ctx)
 			if c >= 500 {
-				logger.Errorf("%+v", cause(err))
+				log.Get(ctx).Errorf("%+v", cause(err))
 			} else if c >= 400 {
-				logger.Warn(err)
+				log.Get(ctx).Warn(err)
 			}
 
 			return ctx
