@@ -31,4 +31,5 @@ require (
 	github.com/uber/jaeger-client-go v2.25.0+incompatible
 	github.com/uber/jaeger-lib v2.2.0+incompatible
 	go.uber.org/automaxprocs v1.3.0
+	golang.org/x/net v0.0.0-20200506145744-7e3656a0809f
 )
