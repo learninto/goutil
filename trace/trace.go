@@ -38,7 +38,7 @@ func init() {
 	cfg := config.Configuration{
 		ServiceName: conf.AppID,
 		Sampler: &config.SamplerConfig{
-			Type:  jaeger.SamplerTypeConst,
+			Type:  jaeger.SamplerTypeProbabilistic,
 			Param: 1,
 		},
 		Reporter: &config.ReporterConfig{
