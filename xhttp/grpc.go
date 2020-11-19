@@ -10,9 +10,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/golang/protobuf/proto"
 	"github.com/learninto/goutil/errors"
 	"golang.org/x/net/http2"
+	"google.golang.org/protobuf/proto"
 )
 
 type GrpcClient interface {

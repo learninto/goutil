@@ -13,7 +13,7 @@ require (
 	github.com/dlmiddlecote/sqlstats v1.0.1
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/go-sql-driver/mysql v1.5.0
-	github.com/golang/protobuf v1.3.2
+	github.com/golang/protobuf v1.4.1
 	github.com/jarcoal/httpmock v1.0.6
 	github.com/json-iterator/go v1.1.10
 	github.com/k0kubun/colorstring v0.0.0-20150214042306-9440f1994b88 // indirect
@@ -32,4 +32,5 @@ require (
 	github.com/uber/jaeger-lib v2.2.0+incompatible
 	go.uber.org/automaxprocs v1.3.0
 	golang.org/x/net v0.0.0-20200506145744-7e3656a0809f
+	google.golang.org/protobuf v1.25.0
 )
