@@ -117,13 +117,13 @@ func GetTraceID(ctx context.Context) (traceID string) {
 
 // InjectTrace 注入 OpenTracing 头信息
 func InjectTraceHeader(ctx opentracing.SpanContext, req *http.Request) {
-	opentracing.GlobalTracer().Inject(
+	_ = opentracing.GlobalTracer().Inject(
 		ctx,
 		opentracing.HTTPHeaders,
 		opentracing.HTTPHeadersCarrier(req.Header),
 	)
 
-	jctx, ok := ctx.(jaeger.SpanContext)
+	jCtx, ok := ctx.(jaeger.SpanContext)
 	if !ok {
 		return
 	}
@@ -133,18 +133,29 @@ func InjectTraceHeader(ctx opentracing.SpanContext, req *http.Request) {
 
 	// Envoy 使用 Zipkin 风格头信息
 	// https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/observability/tracing
-	req.Header.Set("x-b3-traceid", jctx.TraceID().String())
-	req.Header.Set("x-b3-spanid", jctx.SpanID().String())
-	req.Header.Set("x-b3-parentspanid", jctx.ParentID().String())
-	if jctx.IsSampled() {
+	req.Header.Set("x-b3-traceid", jCtx.TraceID().String())
+	req.Header.Set("x-b3-spanid", jCtx.SpanID().String())
+	req.Header.Set("x-b3-parentspanid", jCtx.ParentID().String())
+	if jCtx.IsSampled() {
 		req.Header.Set("x-b3-sampled", "1")
 	}
-	if jctx.IsDebug() {
+	if jCtx.IsDebug() {
 		req.Header.Set("x-b3-flags", "1")
 	}
 }
 
+// StartFollowSpanFromContext 开起一个 follow 类型 span
+// follow 类型用于异步任务，可能在 root span 结束之后才完成。
+func StartFollowSpanFromContext(ctx context.Context, operation string) (opentracing.Span, context.Context) {
+	span := opentracing.SpanFromContext(ctx)
+	if span == nil {
+		return opentracing.StartSpanFromContext(ctx, operation)
+	}
+
+	return opentracing.StartSpanFromContext(ctx, operation, opentracing.FollowsFrom(span.Context()))
+}
+
 // Stop 停止 trace 协程
 func Stop() {
-	closer.Close()
+	_ = closer.Close()
 }
