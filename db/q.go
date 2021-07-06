@@ -165,6 +165,8 @@ func (m Q) BuildFilter(ctx context.Context, filters []F, sql string) (string, er
 		}
 	}
 
+	sql = strings.ReplaceAll(sql, "{{.append_filter}}", appendFilter)
+
 	t := time.Now()
 	curDate := time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.Local).Unix()
 	tempVars := map[string]interface{}{
@@ -175,7 +177,7 @@ func (m Q) BuildFilter(ctx context.Context, filters []F, sql string) (string, er
 		"cur_date":       curDate,                      // 当天开始时间戳值
 		"yesterday":      curDate - 86400,              // 昨天开始时间戳值
 		"tomorrow":       curDate + 86400,              // 明天开始间戳值
-		"append_filter":  appendFilter,                 // 追加的筛选条件
+		//"append_filter":  appendFilter,                 // 追加的筛选条件
 	}
 	tmpl, err := template.New("tmpl").Parse(sql)
 	if err != nil {

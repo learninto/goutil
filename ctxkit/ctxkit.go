@@ -24,6 +24,8 @@ const (
 	DepartmentIDKey
 	// DepartmentIdsKey 获取当前部门 IDs 英文逗号隔开，类型：string
 	DepartmentIdsKey
+	// RolesCodesKey 获取当前权限编码 英文逗号隔开，类型：string
+	RolesCodesKey
 	// PartIdsKey 获取当前角色 IDs 英文逗号隔开，类型：string
 	PartIdsKey
 	// UserIPKey 用户 IP，类型：string
@@ -129,9 +131,20 @@ func GetDepartmentIds(ctx context.Context) string {
 	return uid
 }
 
-// WithDepartmentIdS 注入当前管辖部门 ID 英文逗号隔开
+// WithDepartmentIds 注入当前管辖部门 ID 英文逗号隔开
 func WithDepartmentIds(ctx context.Context, departmentID string) context.Context {
 	return context.WithValue(ctx, DepartmentIdsKey, departmentID)
+}
+
+// WithRolesCodes 注入当前权限编码 英文逗号隔开
+func WithRolesCodes(ctx context.Context, rolesCodes string) context.Context {
+	return context.WithValue(ctx, RolesCodesKey, rolesCodes)
+}
+
+// GetRolesCodes 获取当前权限编码 英文逗号隔开
+func GetRolesCodes(ctx context.Context) string {
+	uid, _ := ctx.Value(RolesCodesKey).(string)
+	return uid
 }
 
 // GetPartIds 获取当前角色 ID 英文逗号隔开
