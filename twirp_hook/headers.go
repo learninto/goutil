@@ -37,16 +37,21 @@ func NewInternalHeaders() *twirp.ServerHooks {
 			if err != nil {
 				return ctx, nil
 			}
-			var userId int64
-			_ = json.Unmarshal(c.Data, &userId)
-			ctx = ctxkit.WithUserID(ctx, userId) // 注入用户id
+
+			user := struct {
+				ID        int64 `json:"id"`
+				CompanyId int64 `json:"company_id"`
+			}{}
+			_ = json.Unmarshal(c.Data, &user)
+			ctx = ctxkit.WithUserID(ctx, user.ID)           // 注入用户id
+			ctx = ctxkit.WithCompanyID(ctx, user.CompanyId) // 注入公司id
 
 			return ctx, nil
 		},
 	}
 }
 
-// NewHeaders
+// NewHeaders headers 拦截
 func NewHeaders() *twirp.ServerHooks {
 	type User struct {
 		// Comment: 企业id
@@ -59,6 +64,8 @@ func NewHeaders() *twirp.ServerHooks {
 		PartIds string `json:"part_ids"`
 		// Comment: 部门id数组 英文逗号隔开
 		DepartmentIds string `json:"department_ids"`
+		// Comment: 管辖用户id数组 英文逗号隔开
+		ManagerUserIds string `json:"manager_user_ids"`
 		// Comment: 用户昵称
 		NickName string `json:"nick_name"`
 		// Comment: 用户登录账号
@@ -121,14 +128,15 @@ func NewHeaders() *twirp.ServerHooks {
 				return ctx, twirp.NewError(twirp.Unauthenticated, "抱歉您所在的企业已经过期了")
 			}
 
-			ctx = ctxkit.WithUserID(ctx, u.ID)                   // 注入用户id
-			ctx = ctxkit.WithUserName(ctx, u.UserName)           // 注入用户登录账号
-			ctx = ctxkit.WithNickName(ctx, u.NickName)           // 注入用户昵称
-			ctx = ctxkit.WithCompanyID(ctx, u.CompanyID)         // 注入公司id
-			ctx = ctxkit.WithDepartmentID(ctx, u.DepartmentID)   // 注入管辖部门id
-			ctx = ctxkit.WithPartIds(ctx, u.PartIds)             // 注入角色id
-			ctx = ctxkit.WithDepartmentIds(ctx, u.DepartmentIds) // 注入部门id
-			ctx = ctxkit.WithRolesCodes(ctx, u.RolesCodes)       // 注入权限编码
+			ctx = ctxkit.WithUserID(ctx, u.ID)                    // 注入用户id
+			ctx = ctxkit.WithUserName(ctx, u.UserName)            // 注入用户登录账号
+			ctx = ctxkit.WithNickName(ctx, u.NickName)            // 注入用户昵称
+			ctx = ctxkit.WithCompanyID(ctx, u.CompanyID)          // 注入公司id
+			ctx = ctxkit.WithDepartmentID(ctx, u.DepartmentID)    // 注入管辖部门id
+			ctx = ctxkit.WithPartIds(ctx, u.PartIds)              // 注入角色ids
+			ctx = ctxkit.WithDepartmentIds(ctx, u.DepartmentIds)  // 注入部门ids
+			ctx = ctxkit.WithManageUserIds(ctx, u.ManagerUserIds) // 注入管辖用户ids
+			ctx = ctxkit.WithRolesCodes(ctx, u.RolesCodes)        // 注入权限编码
 
 			return ctx, nil
 		},
@@ -142,6 +150,9 @@ func queryUserInfo(ctx context.Context, sign string) (b []byte, err error) {
 	}
 
 	timeout := 2 * time.Second
+	if d := conf.GetDuration("INTERNAL_API_TIMEOUT"); d > 0 {
+		timeout = d * time.Millisecond
+	}
 	urlStr := conf.Get("FRAME_ADDR") + conf.Get("FRAME_REFRESH_USER_URI")
 	req, _ := http.NewRequest(http.MethodPost, urlStr, bytes.NewReader([]byte("")))
 	req.Header.Set("SIGN", sign)

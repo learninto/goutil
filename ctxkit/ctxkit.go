@@ -14,6 +14,8 @@ const (
 	StartTimeKey
 	// UserIDKey 用户 ID，未登录则为 0，类型：int64
 	UserIDKey
+	// ManageUserIdsKey 管辖用户 IDs，未登录则为 '0'，类型：int64
+	ManageUserIdsKey
 	// UserNameKey 用户 名称，类型：string
 	UserNameKey
 	// NickNameKey 用户 昵称，类型：string
@@ -73,6 +75,20 @@ func WithUserID(ctx context.Context, userID int64) context.Context {
 	return context.WithValue(ctx, UserIDKey, userID)
 }
 
+// GetManageUserIds 获取当前管辖用户 IDS
+func GetManageUserIds(ctx context.Context) string {
+	ids, _ := ctx.Value(ManageUserIdsKey).(string)
+	if ids == "" {
+		return "-1"
+	}
+	return ids
+}
+
+// WithManageUserIds 注入当前管辖用户 IDS
+func WithManageUserIds(ctx context.Context, userIds string) context.Context {
+	return context.WithValue(ctx, ManageUserIdsKey, userIds)
+}
+
 // GetUserName 获取当前登录用户 Name
 func GetUserName(ctx context.Context) (uName string) {
 
@@ -127,8 +143,11 @@ func WithDepartmentID(ctx context.Context, departmentID int64) context.Context {
 
 // GetDepartmentIds 获取当前部门 ID 英文逗号隔开
 func GetDepartmentIds(ctx context.Context) string {
-	uid, _ := ctx.Value(DepartmentIdsKey).(string)
-	return uid
+	ids, _ := ctx.Value(DepartmentIdsKey).(string)
+	if ids == "" {
+		return "-1"
+	}
+	return ids
 }
 
 // WithDepartmentIds 注入当前管辖部门 ID 英文逗号隔开

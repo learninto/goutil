@@ -170,13 +170,14 @@ func (m Q) BuildFilter(ctx context.Context, filters []F, sql string) (string, er
 	t := time.Now()
 	curDate := time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.Local).Unix()
 	tempVars := map[string]interface{}{
-		"user_id":        ctxkit.GetUserID(ctx),        // 用户id列表
-		"part_ids":       ctxkit.GetPartIds(ctx),       // 角色id列表
-		"department_ids": ctxkit.GetDepartmentIds(ctx), // 部门id列表
-		"company_id":     ctxkit.GetCompanyID(ctx),     // 公司id
-		"cur_date":       curDate,                      // 当天开始时间戳值
-		"yesterday":      curDate - 86400,              // 昨天开始时间戳值
-		"tomorrow":       curDate + 86400,              // 明天开始间戳值
+		"user_id":         ctxkit.GetUserID(ctx),        // 用户id列表
+		"part_ids":        ctxkit.GetPartIds(ctx),       // 角色id列表
+		"department_ids":  ctxkit.GetDepartmentIds(ctx), // 部门id列表
+		"manage_user_ids": ctxkit.GetManageUserIds(ctx), // 管辖用户id列表
+		"company_id":      ctxkit.GetCompanyID(ctx),     // 公司id
+		"cur_date":        curDate,                      // 当天开始时间戳值
+		"yesterday":       curDate - 86400,              // 昨天开始时间戳值
+		"tomorrow":        curDate + 86400,              // 明天开始间戳值
 		//"append_filter":  appendFilter,                 // 追加的筛选条件
 	}
 	tmpl, err := template.New("tmpl").Parse(sql)
@@ -196,6 +197,7 @@ func (m Q) BuildFilter(ctx context.Context, filters []F, sql string) (string, er
 
 	sql = html.UnescapeString(sql)
 
+	sql = strings.ReplaceAll(sql, "<no value>", " ")
 	return sql, nil
 }
 
