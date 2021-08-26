@@ -70,6 +70,8 @@ func NewHeaders() *twirp.ServerHooks {
 		NickName string `json:"nick_name"`
 		// Comment: 用户登录账号
 		UserName string `json:"user_name"`
+		// Comment: 密码
+		PassWord string `json:"pass_word"`
 		// Comment: 权限编码  多个，隔开
 		RolesCodes string `json:"roles_codes"`
 		// Comment: 是否生效。0：未生效；100：已生效
