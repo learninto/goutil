@@ -28,6 +28,8 @@ require (
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.6.1
+	github.com/tidwall/gjson v1.8.1
+	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/uber/jaeger-client-go v2.25.0+incompatible
 	github.com/uber/jaeger-lib v2.2.0+incompatible
 	go.uber.org/automaxprocs v1.3.0
