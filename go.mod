@@ -37,3 +37,5 @@ require (
 	golang.org/x/net v0.0.0-20200506145744-7e3656a0809f
 	google.golang.org/protobuf v1.25.0
 )
+
+replace github.com/codahale/hdrhistogram => github.com/HdrHistogram/hdrhistogram-go v0.9.0
