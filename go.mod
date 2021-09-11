@@ -9,8 +9,9 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/dlmiddlecote/sqlstats v1.0.1
 	github.com/fsnotify/fsnotify v1.4.9
-	github.com/go-kiss/memcache v0.0.0-20210719092635-467cdb8e19df // indirect
-	github.com/go-kiss/redis v0.0.0-20210719094043-637dbcd540c2 // indirect
+	github.com/go-kiss/memcache v0.0.0-20210719092635-467cdb8e19df
+	github.com/go-kiss/net/pool v0.0.0-20210719091328-f4192f07e5b8
+	github.com/go-kiss/redis v0.0.0-20210719094043-637dbcd540c2
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/golang/protobuf v1.4.1
 	github.com/jarcoal/httpmock v1.0.6

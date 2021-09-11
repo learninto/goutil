@@ -10,8 +10,8 @@ import (
 	"github.com/learninto/goutil/log"
 	"github.com/learninto/goutil/metrics"
 
-	"github.com/bilibili/net/pool"
-	"github.com/bilibili/redis"
+	"github.com/go-kiss/net/pool"
+	"github.com/go-kiss/redis"
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 )
