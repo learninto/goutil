@@ -65,24 +65,23 @@ func (s PanicHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if rec := recover(); rec != nil {
 			ctx := r.Context()
 			ctx = ctxkit.WithTraceID(ctx, trace.GetTraceID(ctx))
-
-			logger := log.Get(ctx)
-			logger.Error(rec, string(debug.Stack()))
+			log.Get(ctx).Error(rec, string(debug.Stack()))
 		}
 		span.Finish()
 	}()
 
-	if r.Method == http.MethodOptions {
-		origin := r.Header.Get("Origin")
-		suffix := conf.Get("CORS_ORIGIN_SUFFIX")
+	origin := r.Header.Get("Origin")
+	suffix := conf.Get("CORS_ORIGIN_SUFFIX")
 
-		if suffix != "" && strings.HasSuffix(origin, suffix) {
-			w.Header().Add("Access-Control-Allow-Origin", origin)
-			w.Header().Add("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
-			w.Header().Add("Access-Control-Allow-Credentials", "true")
-			w.Header().Add("Access-Control-Allow-Headers", "Origin,No-Cache,X-Requested-With,If-Modified-Since,Pragma,Last-Modified,Cache-Control,Expires,Content-Type,Access-Control-Allow-Credentials,DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Cache-Webcdn,Content-Length")
-			return
-		}
+	if origin != "" && suffix != "" && strings.HasSuffix(origin, suffix) {
+		w.Header().Add("Access-Control-Allow-Origin", origin)
+		w.Header().Add("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
+		w.Header().Add("Access-Control-Allow-Credentials", "true")
+		w.Header().Add("Access-Control-Allow-Headers", "Origin,No-Cache,X-Requested-With,If-Modified-Since,Pragma,Last-Modified,Cache-Control,Expires,Content-Type,Access-Control-Allow-Credentials,DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Cache-Webcdn,Content-Length")
+	}
+
+	if r.Method == http.MethodOptions {
+		return
 	}
 
 	s.Handler.ServeHTTP(w, r)
