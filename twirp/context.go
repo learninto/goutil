@@ -18,7 +18,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/golang/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 )
 
 type contextKey int
@@ -79,9 +79,7 @@ func HttpRequest(ctx context.Context) (*http.Request, bool) {
 	return req, ok
 }
 
-// Request retrieves the request.
-// If it is known returns (req, true).
-// If it is not known, it returns (nil, false).
+// Request 返回解析后的请求对象
 func Request(ctx context.Context) (proto.Message, bool) {
 	req, ok := ctx.Value(RequestKey).(proto.Message)
 	return req, ok
