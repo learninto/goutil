@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/uber/jaeger-client-go"
 
@@ -157,5 +158,15 @@ func StartFollowSpanFromContext(ctx context.Context, operation string) (opentrac
 
 // Stop 停止 trace 协程
 func Stop() {
-	_ = closer.Close()
+	closer.Close()
+}
+
+// GetDuration 查询当前 span 耗时
+func GetDuration(span opentracing.Span) time.Duration {
+	jspan, ok := span.(*jaeger.Span)
+	if !ok {
+		return 0
+	}
+
+	return jspan.Duration()
 }
