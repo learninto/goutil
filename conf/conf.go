@@ -41,10 +41,10 @@ func init() {
 		logger().Warn("env APP_ID is empty")
 	}
 
-	if env := os.Getenv("DEPLOY_ENV"); env != "" {
+	if env := os.Getenv("ENV"); env != "" {
 		Env = env
 	} else {
-		logger().Warn("env DEPLOY_ENV is empty")
+		logger().Warn("env ENV is empty")
 	}
 
 	if zone := os.Getenv("ZONE"); zone != "" {
@@ -121,9 +121,7 @@ func (c *Conf) GetStrings(key string) (s []string) {
 		return
 	}
 
-	for _, v := range strings.Split(value, ",") {
-		s = append(s, v)
-	}
+	s = append(s, strings.Split(value, ",")...)
 	return
 }
 
@@ -183,7 +181,7 @@ func (c *Conf) GetDuration(key string) time.Duration {
 
 // GetTime 查询时间配置
 // 默认时间格式为 "2006-01-02 15:04:05"，conf.GetTime("FOO_BEGIN")
-// 如果需要指定时间格式，则可以多传一个参数，conf.Get("FOO_BEGIN", "2006")
+// 如果需要指定时间格式，则可以多传一个参数，conf.GetString("FOO_BEGIN", "2006")
 //
 // 配置不存在或时间格式错误返回**空时间对象**
 // 使用本地时区
