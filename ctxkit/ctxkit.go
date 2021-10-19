@@ -30,6 +30,8 @@ const (
 	RolesCodesKey
 	// PartIdsKey 获取当前角色 IDs 英文逗号隔开，类型：string
 	PartIdsKey
+	// PartNamesKey 获取当前角色 Names 英文逗号隔开，类型：string
+	PartNamesKey
 	// UserIPKey 用户 IP，类型：string
 	UserIPKey
 	// PlatformKey 用户使用平台，ios, android, pc
@@ -175,6 +177,17 @@ func GetPartIds(ctx context.Context) string {
 // WithPartIds 注入当前角色 ID 英文逗号隔开
 func WithPartIds(ctx context.Context, partIds string) context.Context {
 	return context.WithValue(ctx, PartIdsKey, partIds)
+}
+
+// WithPartNames 注入当前角色 ID 英文逗号隔开
+func WithPartNames(ctx context.Context, partNames string) context.Context {
+	return context.WithValue(ctx, PartNamesKey, partNames)
+}
+
+// GetPartNames 获取当前角色 ID 英文逗号隔开
+func GetPartNames(ctx context.Context) string {
+	pNames, _ := ctx.Value(PartNamesKey).(string)
+	return pNames
 }
 
 // GetUserIP 获取用户 IP

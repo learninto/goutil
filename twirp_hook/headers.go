@@ -62,6 +62,8 @@ func NewHeaders() *twirp.ServerHooks {
 		DepartmentID int64 `json:"department_id"`
 		// Comment: 角色id数组 英文逗号隔开
 		PartIds string `json:"part_ids"`
+		// Comment: 角色name数组 英文逗号隔开
+		PartNames string `json:"part_names"`
 		// Comment: 部门id数组 英文逗号隔开
 		DepartmentIds string `json:"department_ids"`
 		// Comment: 管辖用户id数组 英文逗号隔开
@@ -136,6 +138,7 @@ func NewHeaders() *twirp.ServerHooks {
 			ctx = ctxkit.WithCompanyID(ctx, u.CompanyID)          // 注入公司id
 			ctx = ctxkit.WithDepartmentID(ctx, u.DepartmentID)    // 注入管辖部门id
 			ctx = ctxkit.WithPartIds(ctx, u.PartIds)              // 注入角色ids
+			ctx = ctxkit.WithPartNames(ctx, u.PartNames)          // 注入角色names
 			ctx = ctxkit.WithDepartmentIds(ctx, u.DepartmentIds)  // 注入部门ids
 			ctx = ctxkit.WithManageUserIds(ctx, u.ManagerUserIds) // 注入管辖用户ids
 			ctx = ctxkit.WithRolesCodes(ctx, u.RolesCodes)        // 注入权限编码
