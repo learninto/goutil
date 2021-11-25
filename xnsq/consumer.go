@@ -16,7 +16,8 @@ func (m Nsq) InitConsumer(topic, channel string, handler nsq.Handler) {
 		// TODO 写日志
 		panic(err)
 	}
-	c.AddHandler(handler) // 添加消费者接口
+	c.SetLogger(nil, nsq.LogLevelWarning) //屏蔽系统日志
+	c.AddHandler(handler)                 // 添加消费者接口
 
 	//建立NSQLookupd连接
 	addr := strings.Builder{}

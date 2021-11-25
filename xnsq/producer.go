@@ -15,6 +15,8 @@ func (m Nsq) Publish(topic string, body []byte) error {
 	addr.WriteString(m.Port)
 
 	w, _ := nsq.NewProducer(addr.String(), config)
+	w.SetLogger(nil, nsq.LogLevelWarning)
+
 	if err := w.Publish(topic, body); err != nil {
 		return err
 	}

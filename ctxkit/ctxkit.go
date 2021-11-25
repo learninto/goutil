@@ -69,6 +69,9 @@ const (
 // GetUserID 获取当前登录用户 ID
 func GetUserID(ctx context.Context) int64 {
 	uid, _ := ctx.Value(UserIDKey).(int64)
+	if uid == 0 {
+		return -1
+	}
 	return uid
 }
 
@@ -124,6 +127,9 @@ func WithNickName(ctx context.Context, userName string) context.Context {
 // GetCompanyID 获取当前公司 ID
 func GetCompanyID(ctx context.Context) int64 {
 	uid, _ := ctx.Value(CompanyIDKey).(int64)
+	if uid == 0 {
+		return -1
+	}
 	return uid
 }
 
@@ -135,6 +141,9 @@ func WithCompanyID(ctx context.Context, companyID int64) context.Context {
 // GetDepartmentID 获取当前管辖部门 ID
 func GetDepartmentID(ctx context.Context) int64 {
 	departmentID, _ := ctx.Value(DepartmentIDKey).(int64)
+	if departmentID == 0 {
+		return -1
+	}
 	return departmentID
 }
 
