@@ -1,6 +1,8 @@
 package errors
 
 import (
+	"fmt"
+
 	"github.com/learninto/goutil/twirp"
 
 	"github.com/pkg/errors"
@@ -78,4 +80,24 @@ func Code(err error) (int32, bool) {
 	}
 
 	return 0, false
+}
+
+// MetaError 新建meta错误
+//
+// 为了避免与httpStatus错误冲突，错误码及错误信息将放在meta中。
+// 返回 httpStatus 为 200。
+// 返回案例如下：
+// {
+//    "code": "",
+//    "msg": "",
+//    "meta": {
+//        "code": "@code",
+//        "msg": "@err"
+//    }
+// }
+func MetaError(code int32, err string) twirp.Error {
+	ne := twirp.NewError(twirp.NoError, "")
+	ne = ne.WithMeta("code", fmt.Sprintf("%v", code))
+	ne = ne.WithMeta("msg", err)
+	return ne
 }
