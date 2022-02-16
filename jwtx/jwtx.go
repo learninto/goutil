@@ -1,4 +1,4 @@
-package jwt
+package jwtx
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 	"github.com/learninto/goutil/conf"
 	"github.com/learninto/goutil/errors"
 
-	jwtD "github.com/dgrijalva/jwt-go"
+	"github.com/dgrijalva/jwt-go"
 )
 
 // 一些常量
@@ -16,12 +16,13 @@ var (
 	ExpiresTime int    = 259200
 )
 
+// CustomClaims
 // Structured version of Claims Section, as referenced at
 // https://tools.ietf.org/html/rfc7519#section-4.1
 // See examples for how to use this with your own claim types
 type CustomClaims struct {
 	Data json.RawMessage
-	jwtD.StandardClaims
+	jwt.StandardClaims
 }
 
 // JWT 签名结构
@@ -47,7 +48,7 @@ func getSignKey() []byte {
 	return []byte(signingKey)
 }
 
-//getExpiresTime 获取过期时间
+// getExpiresTime 获取过期时间
 func getExpiresTime() int64 {
 	jTime := conf.GetInt("JWT_EFFECTIVE_DURATION")
 	if jTime == 0 {
@@ -57,42 +58,46 @@ func getExpiresTime() int64 {
 	return time.Now().Add(time.Duration(jTime) * time.Second).Unix()
 }
 
-// CreateToken 生成一个token
-func (j JWT) CreateToken(claims CustomClaims) (string, error) {
-	var method jwtD.SigningMethod
+// getSigningMethod 获取签名方法
+func getSigningMethod() (method jwt.SigningMethod) {
 	switch conf.Get("JWT_SIGNING_METHOD") {
 	case "HS256":
-		method = jwtD.SigningMethodHS256
+		method = jwt.SigningMethodHS256
 	case "HS384":
-		method = jwtD.SigningMethodHS384
+		method = jwt.SigningMethodHS384
 	case "HS512":
-		method = jwtD.SigningMethodHS512
+		method = jwt.SigningMethodHS512
 	default:
-		method = jwtD.SigningMethodHS256
+		method = jwt.SigningMethodHS256
 	}
+	return method
+}
 
+// CreateToken 生成一个token
+func (j JWT) CreateToken(claims CustomClaims) (string, error) {
+	method := getSigningMethod()
 	claims.StandardClaims.ExpiresAt = j.ExpiresTime
-	token := jwtD.NewWithClaims(method, claims)
+	token := jwt.NewWithClaims(method, claims)
 	return token.SignedString(j.SigningKey)
 }
 
-// 解析Token
+// ParseToken 解析Token
 func (j JWT) ParseToken(tokenString string) (*CustomClaims, error) {
 	if tokenString == "" {
 		return nil, errors.TokenMalformed
 	}
 
-	token, err := jwtD.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwtD.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return j.SigningKey, nil
 	})
 	if err != nil {
-		if ve, ok := err.(*jwtD.ValidationError); ok {
-			if ve.Errors&jwtD.ValidationErrorMalformed != 0 {
+		if ve, ok := err.(*jwt.ValidationError); ok {
+			if ve.Errors&jwt.ValidationErrorMalformed != 0 {
 				return nil, errors.TokenMalformed
-			} else if ve.Errors&jwtD.ValidationErrorExpired != 0 {
+			} else if ve.Errors&jwt.ValidationErrorExpired != 0 {
 				// Token is expired
 				return nil, errors.TokenExpired
-			} else if ve.Errors&jwtD.ValidationErrorNotValidYet != 0 {
+			} else if ve.Errors&jwt.ValidationErrorNotValidYet != 0 {
 				return nil, errors.TokenNotValidYet
 			} else {
 				return nil, errors.TokenInvalid
@@ -105,19 +110,19 @@ func (j JWT) ParseToken(tokenString string) (*CustomClaims, error) {
 	return nil, errors.TokenInvalid
 }
 
-// 更新token
+// RefreshToken 更新token
 func (j JWT) RefreshToken(tokenString string) (string, error) {
-	jwtD.TimeFunc = func() time.Time {
+	jwt.TimeFunc = func() time.Time {
 		return time.Unix(0, 0)
 	}
-	token, err := jwtD.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwtD.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return j.SigningKey, nil
 	})
 	if err != nil {
 		return "", err
 	}
 	if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid {
-		jwtD.TimeFunc = time.Now
+		jwt.TimeFunc = time.Now
 		return j.CreateToken(*claims)
 	}
 	return "", errors.TokenInvalid

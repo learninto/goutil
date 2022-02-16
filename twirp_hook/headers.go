@@ -9,7 +9,7 @@ import (
 
 	"github.com/learninto/goutil/conf"
 	"github.com/learninto/goutil/ctxkit"
-	"github.com/learninto/goutil/jwt"
+	"github.com/learninto/goutil/jwtx"
 	"github.com/learninto/goutil/log"
 	"github.com/learninto/goutil/redis"
 	"github.com/learninto/goutil/twirp"
@@ -33,7 +33,7 @@ func NewInternalHeaders() *twirp.ServerHooks {
 			ctx = ctxkit.WithUserIP(ctx, req.RemoteAddr)               // TODO 注入 客户端IP 标识  目前貌似不准确待测试
 
 			/* ------ 用户信息 ------ */
-			c, err := jwt.NewJWT().ParseToken(sign)
+			c, err := jwtx.NewJWT().ParseToken(sign)
 			if err != nil {
 				return ctx, nil
 			}
