@@ -33,7 +33,7 @@ func NewInternalHeaders() *twirp.ServerHooks {
 			ctx = ctxkit.WithUserIP(ctx, req.RemoteAddr)               // TODO 注入 客户端IP 标识  目前貌似不准确待测试
 
 			/* ------ 用户信息 ------ */
-			c, err := jwtx.NewJWT().ParseToken(sign)
+			c, err := jwtx.CustomClaims{}.ParseToken(ctx, sign)
 			if err != nil {
 				return ctx, nil
 			}
