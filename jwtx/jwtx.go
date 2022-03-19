@@ -8,7 +8,7 @@ import (
 	"github.com/learninto/goutil/conf"
 	"github.com/learninto/goutil/errors"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 // 一些常量

@@ -18,7 +18,7 @@ func TestGetSignKey(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := getSignKey(); string(got) != string(tt.want) {
+			if got := GetSigningKey(); string(got) != string(tt.want) {
 				t.Errorf("GetSignKey() = %v, want %v", got, tt.want)
 			}
 		})
@@ -36,28 +36,29 @@ func TestJWT_CreateToken(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    string
 		wantErr bool
 	}{
 		// TODO: Add test cases.
 		{
-			"case 01",
-			fields{SigningKey: []byte("gwt_sign_key")},
-			args{CustomClaims{Data: []byte("123456")}},
-			"",
-			false,
+			name:    "case 01",
+			fields:  fields{SigningKey: []byte("gwt_sign_key")},
+			args:    args{CustomClaims{Data: []byte("123456")}},
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := tt.args.claims.CreateToken(context.TODO())
+			got, err := tt.args.claims.CreateToken(context.TODO())
 			if (err != nil) != tt.wantErr {
 				t.Errorf("CreateToken() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			//if got != tt.want {
-			//	t.Errorf("CreateToken() got = %v, want %v", got, tt.want)
-			//}
+
+			_, err = CustomClaims{}.ParseToken(context.Background(), got)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("CreateToken() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
 		})
 	}
 }
@@ -80,7 +81,7 @@ func TestJWT_ParseToken(t *testing.T) {
 		{
 			name:   "case 01",
 			fields: fields{SigningKey: []byte("gwt_sign_key")},
-			args:   args{tokenString: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJEYXRhIjoxMjM0NTYsImV4cCI6MTY0NTI2MDIxM30.cON6OEoVqwxncQI9WcRRKJPIp2gCEuCMJczAVR2prdY"},
+			args:   args{tokenString: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJEYXRhIjoxMjM0NTYsImV4cCI6MTY0NzkxNzc1OX0.5inASI8EJRCMI6zObDOjuQdRrWJpecX3QMpJ1aqW6BA"},
 			want: &CustomClaims{
 				Data: []byte("123456"),
 			},
