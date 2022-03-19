@@ -1,7 +1,7 @@
 package crond
 
 import (
-	"github.com/robfig/cron"
+	cron "github.com/robfig/cron/v3"
 )
 
 // New returns a new Cron job runner, in the Local time zone.
