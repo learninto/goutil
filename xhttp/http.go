@@ -13,14 +13,25 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/learninto/goutil/conf"
+	"github.com/prometheus/client_golang/prometheus"
+
 	"github.com/learninto/goutil/errors"
 	"github.com/learninto/goutil/log"
-	"github.com/learninto/goutil/metrics"
 	"github.com/learninto/goutil/trace"
 
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 )
+
+// HTTPDurationsSeconds http 调用耗时
+var HTTPDurationsSeconds = prometheus.NewHistogramVec(prometheus.HistogramOpts{
+	Namespace:   conf.AppID,
+	Name:        "http_durations_seconds",
+	Help:        "HTTP latency distributions",
+	Buckets:     defBuckets,
+	ConstLabels: map[string]string{"app": conf.AppID},
+}, []string{"url", "status"})
 
 type myClient struct {
 	cli *http.Client
@@ -98,7 +109,7 @@ func (c *myClient) Do(ctx context.Context, req *http.Request) (resp *http.Respon
 	// /v123/4/56/foo => /v123/%d/%d/foo
 	url = digitsRE.ReplaceAllString(url, "%d")
 
-	metrics.HTTPDurationsSeconds.WithLabelValues(
+	HTTPDurationsSeconds.WithLabelValues(
 		url,
 		fmt.Sprint(status),
 	).Observe(duration.Seconds())
