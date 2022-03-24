@@ -125,10 +125,6 @@ func (claims *CustomClaims) RefreshToken(ctx context.Context, tokenString string
 
 /*
 	对应java版本
-	// @param privateKey 私钥
-	// @param payload 负载，可为空
-	// @param issuer jwt颁发者标识
-	// @param expireAt jwt过期时间
 	PrivateKey priKey = KeyFactory.
 		getInstance("RSA").
 		generatePrivate(
@@ -139,7 +135,12 @@ func (claims *CustomClaims) RefreshToken(ctx context.Context, tokenString string
 	Algorithm algorithm = Algorithm.RSA256((RSAPublicKey)null, (RSAPrivateKey)priKey);
 	return JWT.create().withIssuer(issuer).withExpiresAt(expireAt).withPayload(payload).sign(algorithm);
 */
-func ParsePKCS8PrivateKeyJwt(privateKey string) (tokenStr string, err error) {
+// ParsePKCS8PrivateKeyJwt 根据pkcs8 私钥生成对应jwt token
+// @param privateKey 私钥
+// @param payload 负载，可为空
+// @param issuer jwt颁发者标识
+// @param expireAt jwt过期时间
+func ParsePKCS8PrivateKeyJwt(privateKey string, issuer string, expiresAt time.Time) (tokenStr string, err error) {
 	base64DecodeBytes, err := base64.StdEncoding.DecodeString(privateKey)
 	if err != nil {
 		return
@@ -152,8 +153,8 @@ func ParsePKCS8PrivateKeyJwt(privateKey string) (tokenStr string, err error) {
 	key := pkcs8.(*rsa.PrivateKey)
 
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.RegisteredClaims{
-		Issuer:    "dXzbhbQHY5qnejHa",
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(300 * time.Second)),
+		Issuer:    issuer,
+		ExpiresAt: jwt.NewNumericDate(expiresAt),
 	})
 
 	if tokenStr, err = token.SignedString(key); err != nil {
