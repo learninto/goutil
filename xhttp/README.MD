@@ -4,8 +4,8 @@
 ## http
 
 ```go
-const Timeout = 6 * time.Second
-const ApiFindUserById = Root + "/twirp/user.v1.User/FindUserById"
+    const Timeout = 6 * time.Second
+    const ApiFindUserById = Root + "/twirp/user.v1.User/FindUserById"
 
     params := struct {
 		Id int64 `json:"id"`

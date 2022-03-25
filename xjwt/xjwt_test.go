@@ -1,4 +1,4 @@
-package jwtx
+package xjwt
 
 import (
 	"context"
