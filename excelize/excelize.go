@@ -3,20 +3,20 @@ package excelize
 import (
 	"io"
 
-	"github.com/360EntSecGroup-Skylar/excelize/v2"
+	excelize "github.com/xuri/excelize/v2"
 )
 
-// NewFile
+// NewFile 创建文件
 func NewFile() *excelize.File {
 	return excelize.NewFile()
 }
 
-// OpenFile
+// OpenFile 打开文件
 func OpenFile(filename string) (*excelize.File, error) {
 	return excelize.OpenFile(filename)
 }
 
-// OpenReader
+// OpenReader 打开文件流
 func OpenReader(r io.Reader) (*excelize.File, error) {
 	return excelize.OpenReader(r)
 }
