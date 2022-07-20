@@ -1,6 +1,6 @@
 module github.com/learninto/goutil
 
-go 1.17
+go 1.18
 
 require (
 	bou.ke/monkey v1.0.2
@@ -99,4 +99,3 @@ require (
 	modernc.org/token v1.0.0 // indirect
 )
 
-replace github.com/codahale/hdrhistogram => github.com/HdrHistogram/hdrhistogram-go v0.9.0
