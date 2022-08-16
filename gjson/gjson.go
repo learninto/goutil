@@ -29,7 +29,7 @@ func GetInterface(json, path string) interface{} {
 	return ss.Value()
 }
 
-// GetBool returns an boolean representation.
+// GetBool returns a boolean representation.
 func GetBool(json, path string) bool {
 	ss := gjson.Get(json, path)
 	return ss.Bool()
@@ -65,7 +65,7 @@ func GetBool(json, path string) bool {
 //  "friends.#.first"    >> ["James","Roger"]
 //
 // This function expects that the json is well-formed, and does not validate.
-// Invalid json will not panic, but it may return back unexpected results.
+// Invalid json will not panic, but it may return unexpected results.
 // If you are consuming JSON from an unpredictable source then you may want to
 // use the Valid function first.
 func GetFloat(json, path string) float64 {
@@ -73,7 +73,7 @@ func GetFloat(json, path string) float64 {
 	return ss.Float()
 }
 
-// GetMap returns back an map of values. The result should be a JSON array.
+// GetMap returns a map of values. The result should be a JSON array.
 func GetMap(json, path string) map[string]gjson.Result {
 	ss := gjson.Get(json, path)
 	return ss.Map()
