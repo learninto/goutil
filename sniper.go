@@ -15,7 +15,6 @@ import (
 	_ "github.com/learninto/goutil/conf" // init conf
 	"github.com/learninto/goutil/db"
 	"github.com/learninto/goutil/log"
-	"github.com/learninto/goutil/redis"
 )
 
 func PrometheusHandleFunc(pattern string) {
@@ -90,5 +89,4 @@ func (s PanicHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // GatherMetrics 收集一些被动指标
 func GatherMetrics() {
 	mc.GatherMetrics()
-	redis.GatherMetrics()
 }

@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"github.com/learninto/goutil/memdb"
 	"net/http"
 	"time"
 
 	"github.com/learninto/goutil/conf"
 	"github.com/learninto/goutil/ctxkit"
 	"github.com/learninto/goutil/log"
-	"github.com/learninto/goutil/redis"
 	"github.com/learninto/goutil/twirp"
 	"github.com/learninto/goutil/xhttp"
 	"github.com/learninto/goutil/xjwt"
@@ -149,19 +149,21 @@ func NewHeaders() *twirp.ServerHooks {
 }
 
 func queryUserInfo(ctx context.Context, sign string) (b []byte, err error) {
-	userBody, _ := redis.Get(ctx, "default").Get(ctx, sign)
-	if userBody != nil && userBody.Value != nil {
-		return userBody.Value, nil
+	ctx, db := memdb.Get(ctx, "USER_LOGIN")
+
+	userBody, err := db.Get(ctx, sign).Bytes()
+	if err != nil && userBody != nil {
+		return userBody, nil
 	}
+
+	urlStr := conf.Get("FRAME_ADDR") + conf.Get("FRAME_REFRESH_USER_URI")
+	req, _ := http.NewRequest(http.MethodPost, urlStr, bytes.NewReader([]byte("")))
+	req.Header.Set("SIGN", sign)
 
 	timeout := 2 * time.Second
 	if d := conf.GetDuration("INTERNAL_API_TIMEOUT"); d > 0 {
 		timeout = d * time.Millisecond
 	}
-	urlStr := conf.Get("FRAME_ADDR") + conf.Get("FRAME_REFRESH_USER_URI")
-	req, _ := http.NewRequest(http.MethodPost, urlStr, bytes.NewReader([]byte("")))
-	req.Header.Set("SIGN", sign)
-
 	resp, err := xhttp.NewClient(timeout).Do(ctx, req)
 	if err != nil {
 		log.Get(ctx).Error("请求FRAME_REFRESH_USER_URI失败：", err)
@@ -171,6 +173,6 @@ func queryUserInfo(ctx context.Context, sign string) (b []byte, err error) {
 		return
 	}
 
-	userBody, _ = redis.Get(ctx, "default").Get(ctx, sign)
-	return userBody.Value, nil
+	userBody, err = db.Get(ctx, sign).Bytes()
+	return userBody, err
 }
