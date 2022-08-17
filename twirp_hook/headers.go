@@ -149,7 +149,7 @@ func NewHeaders() *twirp.ServerHooks {
 }
 
 func queryUserInfo(ctx context.Context, sign string) (b []byte, err error) {
-	ctx, db := memdb.Get(ctx, "USER_LOGIN")
+	ctx, db := memdb.Get(ctx, "DEFAULT")
 
 	userBody, err := db.Get(ctx, sign).Bytes()
 	if err != nil && userBody != nil {
