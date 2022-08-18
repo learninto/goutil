@@ -160,7 +160,11 @@ func NewHeaders() *twirp.ServerHooks {
 
 // 验证单设备登录
 func checkOneDevice(ctx context.Context, id int64, token string) (context.Context, error) {
-	deviceCacheKey := fmt.Sprintf("user_login_%s_%d", ctxkit.GetDevice(ctx), id)
+	dType := ctxkit.GetDevice(ctx)
+	if dType == "ios" || dType == "android" {
+		dType = "app"
+	}
+	deviceCacheKey := fmt.Sprintf("user_login_%s_%d", dType, id)
 
 	// 验证原token
 	ctx, cache := memdb.Get(ctx, "DEFAULT")
