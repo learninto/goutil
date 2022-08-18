@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
+	"github.com/go-redis/redis/v8"
+	"github.com/learninto/goutil/errors"
 	"github.com/learninto/goutil/memdb"
 	"net/http"
 	"time"
@@ -30,7 +33,7 @@ func NewInternalHeaders() *twirp.ServerHooks {
 			ctx = ctxkit.WithMobiApp(ctx, req.Header.Get("MobiApp"))   // 注入 APP 标识
 			ctx = ctxkit.WithVersion(ctx, req.Header.Get("Version"))   // 注入 版本 标识
 			ctx = ctxkit.WithPlatform(ctx, req.Header.Get("Platform")) // 注入 平台 标识
-			ctx = ctxkit.WithUserIP(ctx, req.RemoteAddr)               // TODO 注入 客户端IP 标识  目前貌似不准确待测试
+			//ctx = ctxkit.WithUserIP(ctx, req.RemoteAddr)               // TODO 注入 客户端IP 标识  目前貌似不准确待测试
 
 			/* ------ 用户信息 ------ */
 			c, err := xjwt.CustomClaims{}.ParseToken(ctx, sign)
@@ -94,31 +97,33 @@ func NewHeaders() *twirp.ServerHooks {
 			if !ok {
 				return ctx, nil
 			}
-			sign := req.Header.Get("Sign")
+			var u User
+			token := req.Header.Get("Sign")
 
-			ctx = ctxkit.WithSignKey(ctx, sign)                        // 注入签名
+			/* ------ 注入标识 ------ */
+			ctx = ctxkit.WithSignKey(ctx, token)                       // 注入签名
 			ctx = ctxkit.WithDevice(ctx, req.Header.Get("Device"))     // 注入 用户设备  iso、android、web
 			ctx = ctxkit.WithMobiApp(ctx, req.Header.Get("MobiApp"))   // 注入 APP 标识
 			ctx = ctxkit.WithVersion(ctx, req.Header.Get("Version"))   // 注入 版本 标识
 			ctx = ctxkit.WithPlatform(ctx, req.Header.Get("Platform")) // 注入 平台 标识
 			ctx = ctxkit.WithUserIP(ctx, req.RemoteAddr)               // TODO 注入 客户端IP 标识  目前貌似不准确待测试
 
-			///* ------ 用户信息 ------ */
-			//c, err := jwt.NewJWT().ParseToken(sign)
-			//if err != nil {
-			//	return ctx, nil
-			//}
-			//u := User{}
-			//_ = json.Unmarshal(c.Data, &u.ID)
-			//ctx = ctxkit.WithUserID(ctx, u.ID) // 注入用户id
+			/* ------ 解析jwt token ------ */
+			c, err := xjwt.CustomClaims{}.ParseToken(ctx, token)
+			if err != nil {
+				return ctx, nil
+			}
+			_ = json.Unmarshal(c.Data, &u.ID)
+			ctx = ctxkit.WithUserID(ctx, u.ID) // 注入用户id
 
-			resp, err := queryUserInfo(ctx, sign)
+			/* ------ 验证用户权限 ------ */
+			resp, err := getUser(ctx, token)
 			if err != nil {
 				return ctx, twirp.NewError(twirp.Unauthenticated, err.Error())
 			}
-
-			u := User{}
-			_ = json.Unmarshal(resp, &u)
+			if err = json.Unmarshal(resp, &u); err != nil {
+				return ctx, twirp.NewError(twirp.Unauthenticated, err.Error())
+			}
 			if u.ID == 0 {
 				return ctx, twirp.NewError(twirp.Unauthenticated, "请先登录")
 			}
@@ -132,6 +137,12 @@ func NewHeaders() *twirp.ServerHooks {
 				return ctx, twirp.NewError(twirp.Unauthenticated, "抱歉您所在的企业已经过期了")
 			}
 
+			/* ------ 验证是否单一设备登录 ------ */
+			if ctx, err = checkOneDevice(ctx, u.ID, token); err != nil {
+				return ctx, err
+			}
+
+			/* ------ 将用户信息写入context ------ */
 			ctx = ctxkit.WithUserID(ctx, u.ID)                    // 注入用户id
 			ctx = ctxkit.WithUserName(ctx, u.UserName)            // 注入用户登录账号
 			ctx = ctxkit.WithNickName(ctx, u.NickName)            // 注入用户昵称
@@ -148,17 +159,38 @@ func NewHeaders() *twirp.ServerHooks {
 	}
 }
 
-func queryUserInfo(ctx context.Context, sign string) (b []byte, err error) {
+// 验证单设备登录
+func checkOneDevice(ctx context.Context, id int64, token string) (context.Context, error) {
+	deviceCacheKey := fmt.Sprintf("user_login_%s_%d", ctxkit.GetDevice(ctx), id)
+
+	// 验证原token
+	ctx, cache := memdb.Get(ctx, "DEFAULT")
+	if oldToken, err := cache.Get(ctx, deviceCacheKey).Result(); err != redis.Nil && oldToken != token {
+		_ = cache.Del(ctx, oldToken) // 删除老的key
+		return ctx, errors.MetaError(201, "抱歉您的账号已在其他设备登录！")
+	}
+
+	return ctx, nil
+}
+
+// 获取用户信息
+func getUser(ctx context.Context, sign string) (b []byte, err error) {
 	ctx, db := memdb.Get(ctx, "DEFAULT")
 
+	/* ------ 获取缓存中的用户信息 ------ */
 	userBody, err := db.Get(ctx, sign).Bytes()
 	if err != nil && userBody != nil {
 		return userBody, nil
 	}
 
+	/* ------ 刷新用户权限，重新写入缓存 ------ */
 	urlStr := conf.Get("FRAME_ADDR") + conf.Get("FRAME_REFRESH_USER_URI")
 	req, _ := http.NewRequest(http.MethodPost, urlStr, bytes.NewReader([]byte("")))
 	req.Header.Set("SIGN", sign)
+	req.Header.Set("Device", ctxkit.GetDevice(ctx))     // 注入 用户设备  iso、android、web
+	req.Header.Set("MobiApp", ctxkit.GetMobiApp(ctx))   // 注入 APP 标识
+	req.Header.Set("Version", ctxkit.GetVersion(ctx))   // 注入 版本 标识
+	req.Header.Set("Platform", ctxkit.GetPlatform(ctx)) // 注入 平台 标识
 
 	timeout := 2 * time.Second
 	if d := conf.GetDuration("INTERNAL_API_TIMEOUT"); d > 0 {
@@ -172,7 +204,6 @@ func queryUserInfo(ctx context.Context, sign string) (b []byte, err error) {
 	if resp.StatusCode != 200 {
 		return
 	}
-
 	userBody, err = db.Get(ctx, sign).Bytes()
 	return userBody, err
 }
