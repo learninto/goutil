@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/go-redis/redis/v8"
-	"github.com/learninto/goutil/errors"
 	"github.com/learninto/goutil/memdb"
 	"net/http"
 	"time"
@@ -167,7 +166,7 @@ func checkOneDevice(ctx context.Context, id int64, token string) (context.Contex
 	ctx, cache := memdb.Get(ctx, "DEFAULT")
 	if oldToken, err := cache.Get(ctx, deviceCacheKey).Result(); err != redis.Nil && oldToken != token {
 		_ = cache.Del(ctx, oldToken) // 删除老的key
-		return ctx, errors.MetaError(201, "抱歉您的账号已在其他设备登录！")
+		return ctx, twirp.NewError(twirp.Unauthenticated, "抱歉您的账号已在其他设备登录！")
 	}
 
 	return ctx, nil
