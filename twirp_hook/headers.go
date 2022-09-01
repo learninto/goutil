@@ -96,7 +96,7 @@ func NewHeaders() *twirp.ServerHooks {
 			if !ok {
 				return ctx, nil
 			}
-			var u User
+			u := User{}
 			token := req.Header.Get("Sign")
 
 			/* ------ 注入标识 ------ */
@@ -110,18 +110,19 @@ func NewHeaders() *twirp.ServerHooks {
 			/* ------ 解析jwt token ------ */
 			c, err := xjwt.CustomClaims{}.ParseToken(ctx, token)
 			if err != nil {
-				return ctx, nil
+				log.Error(ctx, "token解析失败原因：", c)
+			} else {
+				_ = json.Unmarshal(c.Data, &u)
+				log.Info(ctx, "token 反编译：", u)
 			}
-			_ = json.Unmarshal(c.Data, &u.ID)
-			ctx = ctxkit.WithUserID(ctx, u.ID) // 注入用户id
 
 			/* ------ 验证用户权限 ------ */
 			resp, err := getUser(ctx, token)
 			if err != nil {
-				return ctx, twirp.NewError(twirp.Unauthenticated, err.Error())
+				return ctx, twirp.NewError(twirp.Unauthenticated, "请先登录")
 			}
 			if err = json.Unmarshal(resp, &u); err != nil {
-				return ctx, twirp.NewError(twirp.Unauthenticated, err.Error())
+				return ctx, twirp.NewError(twirp.Unauthenticated, "请先登录")
 			}
 			if u.ID == 0 {
 				return ctx, twirp.NewError(twirp.Unauthenticated, "请先登录")
@@ -178,17 +179,20 @@ func checkOneDevice(ctx context.Context, id int64, token string) (context.Contex
 
 // 获取用户信息
 func getUser(ctx context.Context, sign string) (b []byte, err error) {
-	ctx, db := memdb.Get(ctx, "DEFAULT")
+	ctx, cache := memdb.Get(ctx, "DEFAULT")
 
 	/* ------ 获取缓存中的用户信息 ------ */
-	userBody, err := db.Get(ctx, sign).Bytes()
+	userBody, err := cache.Get(ctx, sign).Bytes()
 	if err != nil && userBody != nil {
 		return userBody, nil
 	}
 
 	/* ------ 刷新用户权限，重新写入缓存 ------ */
-	urlStr := conf.Get("FRAME_ADDR") + conf.Get("FRAME_REFRESH_USER_URI")
-	req, _ := http.NewRequest(http.MethodPost, urlStr, bytes.NewReader([]byte("")))
+	req, _ := http.NewRequest(
+		http.MethodPost,
+		conf.Get("FRAME_ADDR")+conf.Get("FRAME_REFRESH_USER_URI"),
+		bytes.NewReader([]byte("")),
+	)
 	req.Header.Set("SIGN", sign)
 	req.Header.Set("Device", ctxkit.GetDevice(ctx))     // 注入 用户设备  iso、android、web
 	req.Header.Set("MobiApp", ctxkit.GetMobiApp(ctx))   // 注入 APP 标识
@@ -201,12 +205,12 @@ func getUser(ctx context.Context, sign string) (b []byte, err error) {
 	}
 	resp, err := xhttp.NewClient(timeout).Do(ctx, req)
 	if err != nil {
-		log.Get(ctx).Error("请求FRAME_REFRESH_USER_URI失败：", err)
+		log.Error(ctx, "请求FRAME_REFRESH_USER_URI失败：", err)
 		return b, nil
 	}
 	if resp.StatusCode != 200 {
 		return
 	}
-	userBody, err = db.Get(ctx, sign).Bytes()
+	userBody, err = cache.Get(ctx, sign).Bytes()
 	return userBody, err
 }
