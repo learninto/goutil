@@ -209,7 +209,7 @@ func getUser(ctx context.Context, sign string) (b []byte, err error) {
 		return b, nil
 	}
 	if resp.StatusCode != 200 {
-		return
+		return b, twirp.NewError(twirp.Unauthenticated, "请先登录")
 	}
 	userBody, err = cache.Get(ctx, sign).Bytes()
 	return userBody, err
