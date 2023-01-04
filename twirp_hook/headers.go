@@ -60,6 +60,8 @@ func NewHeaders() *twirp.ServerHooks {
 		CompanyID int64 `json:"company_id"`
 		// Comment: 唯一标识
 		ID int64 `json:"id"`
+		// Comment: 是否是系统默认角色,系统默认角色不允许删除  0:非默认  1:默认
+		IsSystem int64 `json:"is_system"`
 		// Comment：部门id
 		DepartmentID int64 `json:"department_id"`
 		// Comment: 角色id数组 英文逗号隔开
@@ -154,6 +156,8 @@ func NewHeaders() *twirp.ServerHooks {
 			ctx = ctxkit.WithManageUserIds(ctx, u.ManagerUserIds) // 注入管辖用户ids
 			ctx = ctxkit.WithRolesCodes(ctx, u.RolesCodes)        // 注入权限编码
 
+			/* ------ 将用户信息写入ResponseHeader ------ */
+			_ = twirp.SetHTTPResponseHeader(ctx, "roles-codes", u.RolesCodes) // 注入权限编码
 			return ctx, nil
 		},
 	}
