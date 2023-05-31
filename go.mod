@@ -15,7 +15,7 @@ require (
 	github.com/jarcoal/httpmock v1.0.6
 	github.com/jmoiron/sqlx v1.3.4
 	github.com/k0kubun/pp v3.0.1+incompatible
-	github.com/learninto/gorsa v1.0.0
+	github.com/learninto/gorsa v1.0.2
 	github.com/mattn/go-isatty v0.0.14
 	github.com/ngrok/sqlmw v0.0.0-20210819213940-241da6c2def4
 	github.com/nsqio/go-nsq v1.0.8

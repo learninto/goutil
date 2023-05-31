@@ -1,11 +1,8 @@
 package xrsa
 
 import (
-	"encoding/hex"
 	"fmt"
 	"testing"
-
-	"github.com/learninto/gorsa"
 )
 
 var Pubkey = `-----BEGIN Public key-----
@@ -18,47 +15,32 @@ MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBAIeiSgcWa8kiEqMzvqV0BTd8MGAi5fw0
 -----END Private key-----
 `
 
-func Test_applyPriEPubD(t *testing.T) {
-	text := `{"domainId":"guanbi", "externalUserId":"test001"}`
-	prienctypt, err := gorsa.PriKeyEncrypt(text, Pirvatekey)
+func Test_PriKeyEncrypt(t *testing.T) {
+	res, err := GenerateKey(1024)
 	if err != nil {
+		fmt.Println(err)
 		return
 	}
-	//println(`{"domainId":"domId","externalUserId":"UID","timestamp":1521616977}`)
-	fmt.Printf("http://databi.zzgqsh.com/m/app/v082b65dd1b564e04b0ff563?provider=guanbi&ssoToken=%s", hex.EncodeToString([]byte(prienctypt)))
-	//println(prienctypt)
+	publicKey := res.PublicKeyBase64
+	privateKey := res.PrivateKeyBase64
 
-	//pubdecrypt, err := gorsa.PublicDecrypt(prienctypt, Pubkey)
-	//if err != nil {
-	//	return err
-	//}
-	//println(pubdecrypt)
-	//if string(pubdecrypt) != `liyong` {
-	//	return errors.New(`Decryption failed`)
-	//}
+	fmt.Println("\n私钥: \n\r" + privateKey)
+	fmt.Println("\n公钥: \n\r" + publicKey)
+	fmt.Println("\n私钥加密 —— 公钥解密")
 
-	type args struct {
-		data       string
-		privateKey string
+	str := `{"domainId":"id", "externalUserId":"test001"}`
+	fmt.Println("\n\r明文：\r\n" + str)
+	encodedData, err := PriKeyEncrypt(str, privateKey)
+	if err != nil {
+		fmt.Println(err)
+		return
 	}
-	tests := []struct {
-		name    string
-		args    args
-		want    string
-		wantErr bool
-	}{
-		// TODO: Add test cases.
+	fmt.Println("\n密文：\r\n" + encodedData)
+
+	decodedData, err := PublicDecrypt(encodedData, publicKey)
+	if err != nil {
+		fmt.Println(err)
+		return
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := applyPriEPubD(tt.args.data, tt.args.privateKey)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("applyPriEPubD() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("applyPriEPubD() got = %v, want %v", got, tt.want)
-			}
-		})
-	}
+	fmt.Println("\n解密后文字: \r\n" + decodedData)
 }

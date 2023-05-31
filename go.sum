@@ -171,8 +171,8 @@ github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORN
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
 github.com/kr/text v0.1.0 h1:45sCR5RtlFHMR4UwH9sdQ5TC8v0qDQCHnXt+kaKSTVE=
 github.com/kr/text v0.1.0/go.mod h1:4Jbv+DJW3UT/LiOwJeYQe1efqtUx/iVham/4vfdArNI=
-github.com/learninto/gorsa v1.0.0 h1:tKx0K8TVFpK28xyFuNxjSkHMjCDeanJ70wXh/XiFhfw=
-github.com/learninto/gorsa v1.0.0/go.mod h1:LNVjepk2dAF2kbH3SNW01YqjJaFuhrLWqpGPyU2BnoM=
+github.com/learninto/gorsa v1.0.2 h1:446sZSJ+NSXapoELgKpyn2kMJa2GSfjFMtkA5t2HKi0=
+github.com/learninto/gorsa v1.0.2/go.mod h1:LNVjepk2dAF2kbH3SNW01YqjJaFuhrLWqpGPyU2BnoM=
 github.com/lib/pq v1.2.0 h1:LXpIM/LZ5xGFhOpXAQUIMM1HdyqzVYM13zNdjCEEcA0=
 github.com/lib/pq v1.2.0/go.mod h1:5WUZQaWbwv1U+lTReE5YruASi9Al49XbQIvNi/34Woo=
 github.com/magiconair/properties v1.8.1 h1:ZC2Vc7/ZFkGmsVC9KvOjumD+G5lXy2RtTKyzRKO2BQ4=
